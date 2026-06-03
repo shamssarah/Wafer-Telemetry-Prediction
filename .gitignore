@@ -1,0 +1,5 @@
+# Ignore model weights and training artifacts
+best_model_weights.pth
+*pkl
+*ts
+experimentation.ipynb
