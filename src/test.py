@@ -1,6 +1,11 @@
 # tests/test_integration.py
 from fastapi.testclient import TestClient
 from api.main import app
+
+from api.models.image import ImageResponse
+from api.models.telemetry import TelemetryResponse
+import time
+
  
 client = TestClient(app)
 
@@ -48,3 +53,19 @@ def test_image():
     assert "anomaly"               in data
     assert "reconstruction_error"  in data
     assert isinstance(data["anomaly"], bool)
+
+def test_report():
+    tele = TelemetryResponse(alert=True, alert_step=84, lead_time=76, affected_parameter="pressure")
+    img  = ImageResponse(anomaly=True, reconstruction_error=0.73)
+    
+    response = client.post("/report", json={
+        "telemetry_result": tele.model_dump(),
+        "image_result":     img.model_dump()
+    })
+    assert response.status_code == 200
+    
+    data = response.json()
+    print(data)
+    assert data["mode"]     in [1, 2]
+    assert data["severity"] in ["low", "medium", "high"]
+    assert data["urgency"]  in ["immediate", "scheduled", "monitor"]

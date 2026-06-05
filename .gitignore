@@ -1,3 +1,4 @@
 # Ignore model weights and training artifacts
 best_model_weights.pth
 data
+.env

@@ -18,6 +18,7 @@ def loadModel(device):
 
 def evaluate (model,input,scaler, window_size=30, forecast_steps=10):
     alert_step = None
+    affected_parameter = None
     with torch.no_grad():
         for t in range(len(input) - window_size - forecast_steps + 1):
             window = input [t : t + window_size].unsqueeze(0)
@@ -26,8 +27,8 @@ def evaluate (model,input,scaler, window_size=30, forecast_steps=10):
 
             forecast_raw = scaler.inverse_transform (forecast)
             actual_raw = scaler.inverse_transform (actual)
-
-            if crosses_threshold (forecast_raw,actual_raw):
+            triggered, affected_parameter = crosses_threshold(forecast_raw, actual_raw)
+            if triggered:
                 alert_step = t + window_size
                 break
             
@@ -36,6 +37,7 @@ def evaluate (model,input,scaler, window_size=30, forecast_steps=10):
         "alert":      alert_step is not None,
         "alert_step": alert_step,
         "lead_time":  lead_time,
+        "affected_parameter": affected_parameter
     }
         
 

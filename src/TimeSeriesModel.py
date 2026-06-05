@@ -112,9 +112,9 @@ def crosses_threshold(forecast_raw, actual_raw):
     col_map = {'gas_flow': 0, 'pressure': 1, 'temp': 2}
     for sensor, col_idx in col_map.items():
         errors = np.abs(actual_raw[:, col_idx] - forecast_raw[:, col_idx])
-        if np.mean(errors) > ERROR_THRESHOLDS[sensor]:  # mean over forecast steps
-            return True
-    return False
+        if np.mean(errors) > ERROR_THRESHOLDS[sensor]:
+            return True, sensor  # affected parameter
+    return False, None
 
 def predict(model, data_loader, window_size = 30, forecast_steps=10):
     model.eval()
@@ -132,9 +132,8 @@ def predict(model, data_loader, window_size = 30, forecast_steps=10):
                     forecast     = model(window.unsqueeze(0)).squeeze(0).cpu().numpy()
                     forecast_raw = scaler.inverse_transform(forecast)
                     actual_raw   = scaler.inverse_transform(actual.cpu().numpy())
-                    # print (forecast_raw[:,0],actual_raw[:,0])
-                    # print (crosses_threshold(forecast_raw,actual_raw))
-                    if crosses_threshold(forecast_raw, actual_raw):
+                    triggered, _ = crosses_threshold(forecast_raw, actual_raw)
+                    if triggered:
                         alert_step = t + window_size
                         break
 

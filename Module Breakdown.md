@@ -103,11 +103,11 @@
 ### Module 5 — LLM Agent & Structured Report
 > Correlates signals and produces structured output across both modes.
 
-- [ ] Define report JSON schema: `chamber_id`, `fault_type`, `affected_parameter`, `lead_time_ms`, `severity`, `confidence`, `recommended_action`, `urgency`, `mode`
-- [ ] Mode 1 trigger: telemetry alert fires, no wafer flag yet → preventive report
-- [ ] Mode 2 trigger: telemetry + wafer image both flag → confirmed fault report
-- [ ] Engineer system prompt with schema, fault taxonomy, and mode distinction
-- [ ] Validate output conforms to schema across fault scenarios
+- [X] Define report JSON schema:`fault_type`, `affected_parameter`, `lead_time_ms`, `severity`, `confidence`, `recommended_action`, `urgency`, `mode`
+- [X] Mode 1 trigger: telemetry alert fires, no wafer flag yet → preventive report
+- [X] Mode 2 trigger: telemetry + wafer image both flag → confirmed fault report
+- [X] Engineer system prompt with schema, fault taxonomy, and mode distinction
+- [X] Validate output conforms to schema across fault scenarios
 - [ ] *(Stretch)* Multi-turn agent requests additional telemetry context before filing
 
 ---

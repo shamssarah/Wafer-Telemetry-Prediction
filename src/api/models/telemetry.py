@@ -12,3 +12,4 @@ class TelemetryResponse (BaseModel):
     alert : bool # detected
     alert_step : int | None
     lead_time : int | None
+    affected_parameter : str

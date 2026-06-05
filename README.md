@@ -30,3 +30,26 @@ The system operates across two modes that together cover the full fault lifecycl
 **Sigmoidal degradation is physically realistic.** Real chamber degradation is slow at first, accelerates through the middle, and plateaus at the fault state. The synthetic data mirrors this rather than using a simple linear ramp, which makes the LSTM's prediction problem harder and the evaluation more honest.
 
 ---
+## Lead Time Results
+
+| Fault Type | Avg Lead Time (steps) |
+|------------|----------------------|
+| Loc        | 91.5                 |
+| Near-full  | 87.6                 |
+| Scratch    | 88.6                 |
+| Donut      | 85.9                 |
+| Random     | 80.5                 |
+| Edge-Ring  | 78.5                 |
+| Center     | 78.4                 |
+| Edge-Loc   | 76.2                 |
+---
+## Report Generation
+
+Fault signals from both models are passed to an LLM agent which correlates 
+them and produces a structured JSON report with severity, recommended action, 
+and urgency.
+
+> **Note:** A hardcoded rule-based template would be more reliable and 
+> predictable in production. The LLM is used here to demonstrate integration 
+> as a design pattern — in a real system it would sit alongside deterministic 
+> rules as an optional enrichment layer.
