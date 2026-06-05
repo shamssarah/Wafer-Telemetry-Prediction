@@ -80,6 +80,11 @@ BASELINE = {
     'gas_flow': (100, 2),    # sccm
     'pressure':   (1.2, 0.02)  # torr
 }
+NOISE_STD = {
+    'temp':     3.0,   # ~3°C variation feels realistic
+    'gas_flow': 4.0,   # larger absolute range
+    'pressure': 0.05,  # tiny — pressure is tightly controlled
+}
 
 FAULT_PROFILES = {
     'Center':    {'temp': (365, 5),  'gas_flow': (150, 6),  'pressure': (1.8, 0.1)},
@@ -91,6 +96,7 @@ FAULT_PROFILES = {
     'Scratch':   {'temp': (350, 3),  'gas_flow': (100, 2),  'pressure': (4.5, 0.4)},
     'Near-full': {'temp': (290, 6),  'gas_flow': (80,  5),  'pressure': (4.0, 0.3)},
 }
+
 
 def generate_telemetry_baseline ():
     gas_flow    = np.random.normal(BASELINE['gas_flow'][0], BASELINE['gas_flow'][1] )   # sccm
@@ -114,21 +120,26 @@ def sigmoid_drift(t, y_start, y_end, t_mid, k):
 def generate_synthetic_telemetry (data, file_suffix):
     synthetic_telemetry_data = []
     id_counter = 0
+    total_steps = 200
+    
     for _, row in data.iterrows():
 
+        s_gas, s_temp, s_pressure = generate_telemetry_baseline()
         if row.failureType == 'none':
+
+            noise_scale = 1.0  # stable, Phase 1 only
+
             data_point = {
                 "id": id_counter,
                 "waferMap":    row.waferMap,
                 "failureCode": row.failureCode,
                 "failureType": row.failureType,
-                "temp":        np.random.normal(350, 3),
-                "gas_flow":    np.random.normal(100, 2),
-                "pressure":    np.random.normal(1.2, 0.02),
-                "phase":       1   # always Phase 1, no drift
+                "temp":        np.random.normal(s_temp,     NOISE_STD['temp']     * noise_scale, total_steps),
+                "gas_flow":    np.random.normal(s_gas , NOISE_STD['gas_flow'] * noise_scale, total_steps),
+                "pressure":    np.random.normal(s_pressure, NOISE_STD['pressure'] * noise_scale, total_steps),
+                "phase":       np.ones(total_steps, dtype=int)   # always Phase 1, no drift
             }
         else:
-            s_gas, s_temp, s_pressure = generate_telemetry_baseline()
             e_gas, e_temp, e_pressure = generate_telemetry_fault_data(row.failureType)
 
             values = {
@@ -136,8 +147,10 @@ def generate_synthetic_telemetry (data, file_suffix):
                 "temp": (s_temp, e_temp),
                 "pressure": (s_pressure, e_pressure)
             }
-            t = np.linspace(0, 100, 100)
-            phase = np.where(t < 20, 1, np.where(t < 80, 2, 3))
+
+
+            t = np.linspace(0, total_steps, total_steps)
+            phase = np.where(t < 80, 1, np.where(t < 160, 2, 3))
 
 
             data_point = {
@@ -151,12 +164,17 @@ def generate_synthetic_telemetry (data, file_suffix):
                 'phase': phase        
             }
 
-            for key, (start_point, end_point) in values.items():    
-                total_steps = 100
-                steepness = 0.15          # Adjust for faster/slower transitions
+            for key, (start_point, end_point) in values.items():
+
+                steepness = 0.15
                 t = np.linspace(0, total_steps, total_steps)
-                t_mid = total_steps / 2   # Set midpoint to halfway through the steps
-                data_point[key] = sigmoid_drift(t, start_point, end_point, t_mid, steepness)
+                t_mid = total_steps / 2
+
+                # scale noise up per phase — chamber gets noisier as it degrades
+                noise_scale = np.where(phase == 1, 1.0, np.where(phase == 2, 1.5, 2.0))
+                noise = np.random.normal(0, NOISE_STD[key], size=total_steps) * noise_scale
+
+                data_point[key] = sigmoid_drift(t, start_point, end_point, t_mid, steepness) + noise
 
             id_counter += 1
         synthetic_telemetry_data.append(data_point)

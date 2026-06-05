@@ -10,7 +10,7 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 
-from data_loader import load_data
+from data_loader import load_image_data
 
 
 
@@ -28,6 +28,8 @@ from data_loader import load_data
 TEST_DATA_DIR = "../data/synthetic/test_data.pkl"
 VALIDATION_DATA_DIR = "../data/synthetic/val_data.pkl"
 TRAINING_DATA_DIR = "../data/synthetic/train_split.pkl"
+MODEL_PATH = "../data/models/autoencoder_weights.pth"
+ANOMALY_THRESHOLD = 0.0301 # SET IN MAIN 
 
 class PrintShape(nn.Module):
     def __init__(self, name):
@@ -112,7 +114,7 @@ def train_autoencoder(model, train_loader, val_loader, criterion, optimizer, epo
         print(f"Epoch {epoch+1}/{EPOCHS}, Train Loss: {train_loss/len(train_loader):.4f}, Validation Loss: {val_loss/len(val_loader):.4f}")
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save(model.state_dict(), "best_model_weights.pth")
+            torch.save(model.state_dict(), MODEL_PATH)
         # torch.save(model.state_dict(), "model_weights.pth")
     return model
 
@@ -233,6 +235,7 @@ if __name__ == "__main__":
     argument_parser.add_argument("--epochs","-e", type=int, default=10, help="Number of epochs to train the autoencoder.")
     argument_parser.add_argument("--batch_size","-b", type=int, default=32, help="Batch size for training.")
     argument_parser.add_argument("--learning_rate","-lr", type=float, default=1e-3, help="Learning rate for the optimizer.")
+    argument_parser.add_argument("--model-path",default=MODEL_PATH, help="Model path")
     args = argument_parser.parse_args()
 
     # arguments transformed into variables for easier access
@@ -244,18 +247,10 @@ if __name__ == "__main__":
     LEARNING_RATE = args.learning_rate
 
     # load data
-    train_data = load_data(TRAIN_DATA_PATH,target_class="none")
-    val_data = load_data(VAL_DATA_PATH,target_class="none")
-    test_data = load_data(TEST_DATA_PATH)
+    train_data = load_image_data(TRAIN_DATA_PATH,target_class="none")
+    val_data = load_image_data(VAL_DATA_PATH,target_class="none")
+    test_data = load_image_data(TEST_DATA_PATH)
 
-    # confirm loaders are using the right datasets
-    print(f"Train samples: {len(train_data)}")   # should be 22037
-    print (train_data.data['failureType'].value_counts())
-    print(f"Val samples:   {len(val_data)}")     # should be none only
-    print (val_data.data['failureType'].value_counts())
-    print(f"Test samples:  {len(test_data)}")    # should be 12450 (all classes)
-    print (test_data.data['failureType'].value_counts())
-    
     
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
@@ -268,8 +263,8 @@ if __name__ == "__main__":
 
     # training loop
 
-    if os.path.exists("best_model_weights.pth"):
-        model.load_state_dict(torch.load("best_model_weights.pth"))
+    if os.path.exists(MODEL_PATH):
+        model.load_state_dict(torch.load(MODEL_PATH))
         print("Loaded saved model weights")
     else:
         model = train_autoencoder(model, train_loader, val_loader, criterion, optimizer, EPOCHS)
@@ -285,6 +280,9 @@ if __name__ == "__main__":
     defective_scores = all_scores[defective_mask]
     clean_pixels     = all_pixels[clean_mask]
     defective_pixels = all_pixels[defective_mask]
+
+    ANOMALY_THRESHOLD = np.mean(clean_scores) + 2 * np.std(clean_scores)
+    print ("Suggested Threshold : ", ANOMALY_THRESHOLD)
 
     for file_path in [TEST_DATA_DIR]:
         data = pd.read_pickle(file_path)

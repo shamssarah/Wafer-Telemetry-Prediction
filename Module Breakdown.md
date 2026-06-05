@@ -80,23 +80,23 @@
 ### Module 3 — LSTM Telemetry Predictor
 > Predict faults before they occur. Trained on Phase 1 normal data, forecasts trajectory and fires alert when heading toward fault threshold.
 
-- [ ] Engineer time-series features: rolling mean, rolling std, delta per parameter
-- [ ] Train LSTM on Phase 1 normal telemetry sequences
-- [ ] Implement forecasting: predict next N readings from current window
-- [ ] Define alert trigger: forecast trajectory crosses threshold within time horizon
-- [ ] Evaluate lead time: how many timesteps before Phase 3 does the alert fire?
-- [ ] Document lead time as a key project metric
+- [X] Engineer time-series features: rolling mean, rolling std, delta per parameter
+- [X] Train LSTM on Phase 1 normal telemetry sequences
+- [X] Implement forecasting: predict next N readings from current window
+- [X] Define alert trigger: forecast trajectory crosses threshold within time horizon
+- [X] Evaluate lead time: how many timesteps before Phase 3 does the alert fire?
+- [X] Document lead time as a key project metric
 
 ---
 
 ### Module 4 — FastAPI Backend
 > Unified ingestion API wiring both models.
 
-- [ ] Set up FastAPI project structure
-- [ ] `POST /ingest/telemetry` — accepts sensor payload, returns forecast + alert flag + estimated lead time
-- [ ] `POST /ingest/image` — accepts wafer image, returns reconstruction error + anomaly flag
-- [ ] `GET /status` — health check
-- [ ] Integration tests for both endpoints
+- [X] Set up FastAPI project structure
+- [X] `POST /ingest/telemetry` — accepts sensor payload, returns forecast + alert flag + estimated lead time
+- [X] `POST /ingest/image` — accepts wafer image, returns reconstruction error + anomaly flag
+- [X] `GET /status` — health check
+- [X] Integration tests for both endpoints
 
 ---
 
