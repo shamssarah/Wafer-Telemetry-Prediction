@@ -25,9 +25,9 @@ from data_loader import load_image_data
 #             7         Scratch
 #             8         none
 
-TEST_DATA_DIR = "../data/synthetic/test_data.pkl"
-VALIDATION_DATA_DIR = "../data/synthetic/val_data.pkl"
-TRAINING_DATA_DIR = "../data/synthetic/train_split.pkl"
+TEST_DATA_DIR = "../data/synthetic/test_data.csv"
+VALIDATION_DATA_DIR = "../data/synthetic/val_data.csv"
+TRAINING_DATA_DIR = "../data/synthetic/train_split.csv"
 MODEL_PATH = "../data/models/autoencoder_weights.pth"
 ANOMALY_THRESHOLD = 0.0301 # SET IN MAIN 
 

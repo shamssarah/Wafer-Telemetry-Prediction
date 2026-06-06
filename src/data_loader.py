@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import joblib
+import ast
 
 SCALER_PATH = "../data/models/scaler.pkl"
 
@@ -144,8 +145,9 @@ class TimeSeriesDataset(torch.utils.data.Dataset):
 
 
 def load_image_data(data_path,target_class=None):
-    with open(data_path, 'rb') as file:    
-        data = pd.read_pickle(file)
+
+    data = pd.read_csv(data_path)
+    data['waferMap'] = data['waferMap'].apply(ast.literal_eval)
 
 
     preprocess = transforms.Compose([
@@ -163,8 +165,10 @@ def load_image_data(data_path,target_class=None):
    
     
 def load_time_series_data(data_path, target_class=None, inference=False, sample_n=None, fit_scaler=False):
-    with open(data_path, 'rb') as file:    
-        data = pd.read_pickle(file)
+    data = pd.read_csv(data_path)
+    for col in ['gas_flow', 'temp', 'pressure', 'phase']:
+        data[col] = data[col].apply(ast.literal_eval)
+
 
     if target_class and sample_n:
         pool = data[data.failureType == target_class]
@@ -174,7 +178,7 @@ def load_time_series_data(data_path, target_class=None, inference=False, sample_
     data, scaler = feature_engineering(data, scaler=scaler, fit=fit_scaler)  # unpack tuple
 
     dataset = TimeSeriesDataset(
-        dataframe=data,
+        dataframe=data[['id', 'failureCode', 'failureType', 'gas_flow', 'temp', 'pressure']],
         target_class=target_class,
         inference=inference
     )
