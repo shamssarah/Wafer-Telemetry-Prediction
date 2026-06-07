@@ -1,0 +1,3 @@
+C:/Users/sarah/Documents/Projects/wafer-detection/emitter/build/CMakeFiles/emitter.dir
+C:/Users/sarah/Documents/Projects/wafer-detection/emitter/build/CMakeFiles/edit_cache.dir
+C:/Users/sarah/Documents/Projects/wafer-detection/emitter/build/CMakeFiles/rebuild_cache.dir

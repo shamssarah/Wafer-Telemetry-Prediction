@@ -25,9 +25,9 @@ from data_loader import load_image_data
 #             7         Scratch
 #             8         none
 
-TEST_DATA_DIR = "../data/synthetic/test_data.csv"
-VALIDATION_DATA_DIR = "../data/synthetic/val_data.csv"
-TRAINING_DATA_DIR = "../data/synthetic/train_split.csv"
+TEST_DATA_DIR = "../data/synthetic/test_data.pkl"
+VALIDATION_DATA_DIR = "../data/synthetic/val_data.pkl"
+TRAINING_DATA_DIR = "../data/synthetic/train_split.pkl"
 MODEL_PATH = "../data/models/autoencoder_weights.pth"
 ANOMALY_THRESHOLD = 0.0301 # SET IN MAIN 
 
@@ -115,7 +115,6 @@ def train_autoencoder(model, train_loader, val_loader, criterion, optimizer, epo
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             torch.save(model.state_dict(), MODEL_PATH)
-        # torch.save(model.state_dict(), "model_weights.pth")
     return model
 
 def predict(model, dataloader):

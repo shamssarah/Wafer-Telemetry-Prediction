@@ -24,9 +24,9 @@ from data_loader import load_time_series_data
 #             7         Scratch
 #             8         none
 
-TEST_DATA_DIR = "../data/synthetic/test_data.csv"
-VALIDATION_DATA_DIR = "../data/synthetic/val_data.csv"
-TRAINING_DATA_DIR = "../data/synthetic/train_split.csv"
+TEST_DATA_DIR = "../data/synthetic/test_data.pkl"
+VALIDATION_DATA_DIR = "../data/synthetic/val_data.pkl"
+TRAINING_DATA_DIR = "../data/synthetic/train_split.pkl"
 MODEL_PATH = "../data/models/timeseries_model.pth"
 FAULT_THRESHOLDS = {
     'temp':     360.0,
