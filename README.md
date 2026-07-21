@@ -1,5 +1,7 @@
 # DigitalThread: Agentic Metrology & Root-Cause Inspector
 
+**Tech Stack:** PyTorch, FastAPI, Python, C++, LLM APIs (Claude/OpenAI)
+
 > Dual-signal semiconductor tool health monitoring — wafer imagery + predictive telemetry → early fault detection → automated failure analysis reports
 
 ---
@@ -17,6 +19,7 @@ The system operates across two modes that together cover the full fault lifecycl
 ---
 
 ## Design Decisions
+**Deep Dive:** View the [System Architecture Diagram](Architecture.md) mapping the telemetry and image pipelines
 
 **Prediction, not detection.** Most anomaly detection systems tell you something went wrong. The telemetry model forecasts that something *will* go wrong and how much lead time remains before the fault threshold is crossed. Lead time is a reportable metric.
 
