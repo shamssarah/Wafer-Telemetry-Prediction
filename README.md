@@ -1,4 +1,4 @@
-# DigitalThread: Agentic Metrology & Root-Cause Inspector
+# DigitalThread: AI powered & Root-Cause Inspector
 
 **Tech Stack:** PyTorch, FastAPI, Python, C++, LLM APIs (Claude/OpenAI)
 
