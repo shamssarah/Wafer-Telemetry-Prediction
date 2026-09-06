@@ -49,7 +49,7 @@ The system operates across two modes that together cover the full fault lifecycl
 ## Data Sources
 
 - **WM-811K** — wafer defect map dataset, downloaded from Kaggle
-- **Synthetic telemetry** — generated via sigmoidal degradation profiles per fault class; not included in repo, generate locally
+- **Synthetic telemetry** — generated via sigmoidal degradation profiles per fault class; not included in repo, generate locally. **UCR Wafer** is used determine the baseline for the 'None' defect.
 
 ---
 ## Setup
