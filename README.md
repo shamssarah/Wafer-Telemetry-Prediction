@@ -1,6 +1,6 @@
 # DigitalThread: AI powered & Root-Cause Inspector
 
-**Tech Stack:** PyTorch, FastAPI, Python, C++, LLM APIs (Claude/OpenAI)
+**Tech Stack:** PyTorch, FastAPI, Python, C++, LLM APIs (Gemini)
 
 > Dual-signal semiconductor tool health monitoring — wafer imagery + predictive telemetry → early fault detection → automated failure analysis reports
 
