@@ -7,6 +7,9 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 import joblib
 import ast
+from skimage.measure import block_reduce
+
+import math
 
 SCALER_PATH = "../data/models/scaler.pkl"
 
@@ -21,16 +24,25 @@ class SmartResizePad:
     def __init__(self, target_size=32, fill=0):
         self.target_size = target_size
         self.fill = fill
+        
 
     def __call__(self, img):
 
-        width, height = img.size # 25x27, 27x25, 26x26
-        max_dim = max(width, height) 
+        width, height = img.size
+        max_dim = max(width, height)
         if max_dim > self.target_size:
-            img = F.resize(img, (self.target_size, self.target_size))
-            width, height = img.size # 32x32
-    
-        # Calculate the padding needed to reach the target size
+            block_h = max(1, math.ceil(height / self.target_size))
+            block_w = max(1, math.ceil(width / self.target_size))
+            img_arr = self.downsize_binary_preserve_foreground(np.array(img), block_h=block_h, block_w=block_w)
+            img = F.to_pil_image(img_arr)
+            width, height = img.size
+            # fall through to padding below, don't return early
+        else:
+            scale = self.target_size / max_dim
+            new_w, new_h = round(width * scale), round(height * scale)
+            img = F.resize(img, (new_h, new_w), interpolation=F.InterpolationMode.NEAREST)
+            width, height = new_w, new_h
+        # Pad the shorter dimension to reach target_size
         pad_w = self.target_size - width
         pad_h = self.target_size - height
         
@@ -42,6 +54,14 @@ class SmartResizePad:
         img = F.pad(img, (pad_left, pad_top, pad_right, pad_bottom), fill=self.fill)
         return img
     
+    def downsize_binary_preserve_foreground(self,img_array, block_h, block_w):
+        """
+        Downsize a binary image while preserving foreground pixels.
+        If any pixel in the block is 1, the resulting pixel will be 1.
+        """
+        return block_reduce(img_array, block_size=(block_h, block_w), func=np.max)
+
+
 def feature_engineering(df, scaler=False, fit=False):
     window = 10
     sensor_cols = ['gas_flow', 'pressure', 'temp']
@@ -77,13 +97,13 @@ def feature_engineering(df, scaler=False, fit=False):
     return df, scaler
 
 class WaferDataset(torch.utils.data.Dataset):
-    def __init__(self,dataframe,target_class="none",transform=True):
 
-        if target_class:
-            self.data = dataframe[dataframe.failureType == target_class].reset_index(drop=True)
+    def __init__(self, dataframe, include_classes=None, label_encoder=None, transform=True):
+        if include_classes:
+            self.data = dataframe[dataframe.failureType.isin(include_classes)].reset_index(drop=True)
         else:
             self.data = dataframe.reset_index(drop=True)
-        
+        self.label_encoder = label_encoder
         self.transform = transform
 
     def __len__(self):
@@ -102,12 +122,13 @@ class WaferDataset(torch.utils.data.Dataset):
             img = torch.tensor(wafer_map, dtype=torch.float32).unsqueeze(0)
         return img,label,wafer_id
     
+    
 class TimeSeriesDataset(torch.utils.data.Dataset):
     def __init__(self, dataframe, window_size=30, forecast_steps=10,
-                 target_class='none',  inference=False):
+                 include_classes=None,  inference=False):
         
-        if target_class:
-            self.data = dataframe[dataframe.failureType == target_class].reset_index(drop=True)
+        if include_classes:
+            self.data = dataframe[dataframe.failureType.isin(include_classes)].reset_index(drop=True)
         else:
             self.data = dataframe.reset_index(drop=True)
 
@@ -144,7 +165,7 @@ class TimeSeriesDataset(torch.utils.data.Dataset):
             return torch.tensor(x, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
 
 
-def load_image_data(data_path,target_class=None):
+def load_image_data(data_path,include_classes=None):
 
     with open (data_path,"rb") as file:
         data = pd.read_pickle(file)
@@ -158,18 +179,23 @@ def load_image_data(data_path,target_class=None):
 
     dataset = WaferDataset(
             dataframe=data,
-            target_class=target_class,
+            include_classes=include_classes,
             transform=preprocess
         )
     return dataset
+
+
+
+
+
    
     
-def load_time_series_data(data_path, target_class=None, inference=False, sample_n=None, fit_scaler=False):
+def load_time_series_data(data_path, include_classes=None, inference=False, sample_n=None, fit_scaler=False):
     with open (data_path,"rb") as file:
         data = pd.read_pickle(file)
 
-    if target_class and sample_n:
-        pool = data[data.failureType == target_class]
+    if include_classes and sample_n:
+        pool = data[data.failureType.isin(include_classes)]
         data = pool.sample(n=min(sample_n, len(pool)), random_state=42)
     
     scaler = joblib.load(SCALER_PATH) if not fit_scaler else None
@@ -177,7 +203,7 @@ def load_time_series_data(data_path, target_class=None, inference=False, sample_
 
     dataset = TimeSeriesDataset(
         dataframe=data,
-        target_class=target_class,
+        include_classes=include_classes,
         inference=inference
     )
     return dataset

@@ -246,9 +246,9 @@ if __name__ == "__main__":
     LEARNING_RATE = args.learning_rate
 
     # load data
-    train_data = load_image_data(TRAIN_DATA_PATH,target_class="none")
-    val_data = load_image_data(VAL_DATA_PATH,target_class="none")
-    test_data = load_image_data(TEST_DATA_PATH)
+    train_data = load_image_data(TRAIN_DATA_PATH, include_classes=["none"])
+    val_data = load_image_data(VAL_DATA_PATH, include_classes=["none"])
+    test_data = load_image_data(TEST_DATA_PATH, include_classes=["none"])
 
     
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)

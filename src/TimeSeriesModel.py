@@ -174,8 +174,8 @@ if __name__ == "__main__":
 
     if args.mode == 'train':
         # returns a PyTorch Dataset object with engineered features and labels
-        train_data = load_time_series_data(args.train_path,target_class='none',sample_n=2000)
-        val_data = load_time_series_data(args.validation_path,target_class='none',sample_n=500)
+        train_data = load_time_series_data(args.train_path,include_classes=['none'],sample_n=2000)
+        val_data = load_time_series_data(args.validation_path,include_classes=['none'],sample_n=500)
     
 
         # Create DataLoaders
